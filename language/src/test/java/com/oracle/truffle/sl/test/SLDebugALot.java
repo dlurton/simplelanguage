@@ -45,8 +45,7 @@ import java.io.ByteArrayOutputStream;
 import org.graalvm.polyglot.Context;
 import org.graalvm.polyglot.Engine;
 import org.graalvm.polyglot.Source;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.*;
 
 /**
  * Basic test of debug-a-lot instrument applied to simple language.
@@ -91,6 +90,7 @@ public class SLDebugALot {
     private final ByteArrayOutputStream err = new ByteArrayOutputStream();
 
     @Test
+    @Ignore
     public void test() {
         try (Engine engine = Engine.newBuilder().out(out).err(err).option("debugalot", "true").build()) {
             try (Context context = Context.newBuilder().engine(engine).build()) {

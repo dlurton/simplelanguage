@@ -40,6 +40,7 @@
  */
 package com.oracle.truffle.sl.runtime;
 
+import com.oracle.truffle.sl.builtins.*;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
@@ -63,7 +64,6 @@ import com.oracle.truffle.api.object.Layout;
 import com.oracle.truffle.api.object.Shape;
 import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.sl.SLLanguage;
-import com.oracle.truffle.sl.builtins.SLBuiltinNode;
 import com.oracle.truffle.sl.builtins.SLDefineFunctionBuiltinFactory;
 import com.oracle.truffle.sl.builtins.SLEvalBuiltinFactory;
 import com.oracle.truffle.sl.builtins.SLGetSizeBuiltinFactory;
@@ -74,14 +74,14 @@ import com.oracle.truffle.sl.builtins.SLIsExecutableBuiltinFactory;
 import com.oracle.truffle.sl.builtins.SLIsNullBuiltinFactory;
 import com.oracle.truffle.sl.builtins.SLNanoTimeBuiltinFactory;
 import com.oracle.truffle.sl.builtins.SLNewObjectBuiltinFactory;
-import com.oracle.truffle.sl.builtins.SLPrintlnBuiltin;
 import com.oracle.truffle.sl.builtins.SLPrintlnBuiltinFactory;
-import com.oracle.truffle.sl.builtins.SLReadlnBuiltin;
 import com.oracle.truffle.sl.builtins.SLReadlnBuiltinFactory;
 import com.oracle.truffle.sl.builtins.SLStackTraceBuiltinFactory;
 import com.oracle.truffle.sl.nodes.SLExpressionNode;
 import com.oracle.truffle.sl.nodes.SLRootNode;
 import com.oracle.truffle.sl.nodes.local.SLReadArgumentNode;
+import software.amazon.ion.*;
+import software.amazon.ion.system.*;
 
 /**
  * The run-time state of SL during execution. The context is created by the {@link SLLanguage}. It
@@ -104,6 +104,8 @@ public final class SLContext {
     private final SLLanguage language;
     private final AllocationReporter allocationReporter;
     private final Iterable<Scope> topScopes; // Cache the top scopes
+
+    private final IonSystem ion = IonSystemBuilder.standard().build();
 
     public SLContext(SLLanguage language, TruffleLanguage.Env env, List<NodeFactory<? extends SLBuiltinNode>> externalBuiltins) {
         this.env = env;
@@ -154,6 +156,10 @@ public final class SLContext {
         return topScopes;
     }
 
+    public IonSystem getIon() {
+        return ion;
+    }
+
     /**
      * Adds all builtin functions to the {@link SLFunctionRegistry}. This method lists all
      * {@link SLBuiltinNode builtin implementation classes}.
@@ -172,6 +178,7 @@ public final class SLContext {
         installBuiltin(SLHasSizeBuiltinFactory.getInstance());
         installBuiltin(SLIsExecutableBuiltinFactory.getInstance());
         installBuiltin(SLIsNullBuiltinFactory.getInstance());
+        installBuiltin(SLParseIonBuiltinFactory.getInstance());
     }
 
     public void installBuiltin(NodeFactory<? extends SLBuiltinNode> factory) {
